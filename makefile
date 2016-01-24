@@ -1,7 +1,7 @@
 CC=clang
 CFLAGS += -Wall -Werror -std=c99
 
-INCLUDES=-Iinclude
+INCLUDES=-Iinclude -Isrc -Isrc/objects
 OBJ=assignment.o
 
 GRAPHLIBS=-lallegro -lallegro_main -lallegro_primitives -lallegro_image -lallegro_font -lallegro_ttf
@@ -10,7 +10,7 @@ MUSLIBS=-lsndfile -lportaudio -lportmidi
 MUSIMPL=include/amio_lib_functions.c
 
 %.o: src/%.c .deps
-	$(CC) $(CFLAGS) $(INCLUDES) $(GRAPHLIBS) $(MUSLIBS) -o build/$@ $(GRAPHIMPL) $(MUSIMPL) src/audio.c src/ui_keys.c src/ui.c $< -MMD -MP -MF .deps/$*.d
+	$(CC) $(CFLAGS) $(INCLUDES) $(GRAPHLIBS) $(MUSLIBS) -o build/$@ $(MUSIMPL) src/audio.c src/objects/object.c src/objects/oscillator.c src/objects/lfo.c src/objects/keyboard.c src/ui.c $< -MMD -MP -MF .deps/$*.d
 
 clean:
 	rm -f build/*

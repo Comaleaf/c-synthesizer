@@ -1,129 +1,100 @@
 #include "ui.h"
+
+#include <ctype.h>
+#include <math.h>
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_primitives.h>
+
+#include "object.h"
+#include "types.h"
 #include "audio.h"
+#include "keyboard.h"
 
-#include "ui_keys.h"
+// Private Properties
 
-int note_to_index(char n) {
-	switch (n) {
-		case 'a': return 0;
-		case 'w': return 1;
-		case 's': return 2;
-		case 'e': return 3;
-		case 'd': return 4;
-		case 'f': return 5;
-		case 't': return 6;
-		case 'g': return 7;
-		case 'y': return 8;
-		case 'h': return 9;
-		case 'u': return 10;
-		case 'j': return 11;
-	}
+ALLEGRO_DISPLAY *ui_display = NULL;
+ALLEGRO_EVENT_QUEUE *ui_event_queue = NULL;
 
-	return -1;
-}
+UIPoint ui_mouse; // Cursor position
 
-char index_to_note(int i) {
-	switch (i) {
-		case  0: return 'a';
-		case  1: return 'w';
-		case  2: return 's';
-		case  3: return 'e';
-		case  4: return 'd';
-		case  5: return 'f';
-		case  6: return 't';
-		case  7: return 'g';
-		case  8: return 'y';
-		case  9: return 'h';
-		case 10: return 'u';
-		case 11: return 'j';
-	}
+// Object being manipulated (dragged)
+struct {
+	UIDrawable *target;
+	UIPoint offset;
+} ui_drag;
 
-	return '\0';
-}
-
-// Properties
-
-ALLEGRO_FONT *_font;
-
-UIObject *_objects[100];
-UIPoint _mouse;
-
-UIPoint drag_offset;
-UIObject *drag_object;
-
-void (*_draw_handlers[UITYPE_COUNT])(void *obj, UIPoint loc);
+// Items on the canvas
+UIDrawable *ui_items[UI_MAX_OBJECTS];
 
 void UI_init() {
-	_draw_handlers[UITYPE_KEYBOARD] = &UI_draw_keys;
+    ui_display = al_create_display(1024, 768);
+	ui_event_queue = al_create_event_queue();
 
-	_objects[0] = UIObject_with(UIPoint_with_coords(100, 100), 0, "Oscillator");
-	_objects[1] = UIObject_with(UIPoint_with_coords(100, 300), 0, "Filter");
-	_objects[2] = UIObject_with(UIPoint_with_coords(100, 500), 0, "Delay");
-	_objects[3] = UIObject_with(UIPoint_with_coords(100, 700), 0, "Boat");
-
-	_objects[0]->next = _objects[1];
-	_objects[1]->next = _objects[2];
-
-	initwindow(1024, 768);
-	initfont();
-	initmouse();
-	initkeyboard();
+	al_register_event_source(ui_event_queue, al_get_display_event_source(ui_display));
+	al_register_event_source(ui_event_queue, al_get_mouse_event_source());
+	al_register_event_source(ui_event_queue, al_get_keyboard_event_source());
 
 	al_init_ttf_addon();
-	_font = al_load_ttf_font("data/Roboto-Medium.ttf", 35, 0);
-	 
-	if (!_font) {
-		exit(-1);
-	}
 
-    create_event_queue();
+	ui_items[0] = UIDrawable_with(Object_with(TYPE_KEYBOARD),   0, UIPoint_with_coords(100, 100));
+	ui_items[1] = UIDrawable_with(Object_with(TYPE_OSCILLATOR), 0, UIPoint_with_coords(300, 300));
+	ui_items[2] = UIDrawable_with(Object_with(TYPE_LFO),        0, UIPoint_with_coords(300, 700));
 
-	reg_display_events();
-	reg_mouse_events();
-	reg_keyboard_events();
+	ui_items[0]->object->ui = ui_items[0];
+	ui_items[1]->object->ui = ui_items[1];
+	ui_items[2]->object->ui = ui_items[2];
+
+	ui_items[0]->object->next = ui_items[1]->object;
+	ui_items[1]->object->next = ui_items[2]->object;
 }
 
 void UI_close() {
-	closemouse();
-	closegraph();
+	al_destroy_display(ui_display);
+}
+
+void UI_set_drag_object(struct Object *o) {
+	ui_drag.target = o->ui;
+	ui_drag.offset = UIPoint_with_offset(o->ui->loc, -ui_mouse.x, -ui_mouse.y);
 }
 
 bool UI_next() {
-	if (!check_if_event()) return true;
+	ALLEGRO_EVENT ev;
+	ALLEGRO_TIMEOUT timeout;
+	
+	al_init_timeout(&timeout, 0.06);
 
-	wait_for_event();
-
+	if (!al_wait_for_event_until(ui_event_queue, &ev, &timeout))
+		return true;
+	
+	UIEventMask event_mask = 0;
+	
 	// Event Phase
-	if (event_close_display())
-		return false;
-
-	if (event_mouse_position_changed()) {
-		get_mouse_coordinates();
-		_mouse.x = XMOUSE;
-		_mouse.y = YMOUSE;
+	switch (ev.type) {
+		case ALLEGRO_EVENT_DISPLAY_CLOSE: return false;
+		case ALLEGRO_EVENT_MOUSE_AXES:
+			event_mask |= UI_Event_Mouse_Move;
+			ui_mouse.x = ev.mouse.x;
+			ui_mouse.y = ev.mouse.y;
+			break;
+		case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN: event_mask |= UI_Event_Mouse_Down; break;
+		case ALLEGRO_EVENT_MOUSE_BUTTON_UP:   event_mask |= UI_Event_Mouse_Up;   break;
+		case ALLEGRO_EVENT_KEY_DOWN:          event_mask |= UI_Event_Key_Down;   break;
+		case ALLEGRO_EVENT_KEY_UP:            event_mask |= UI_Event_Key_Up;     break;
 	}
 
-	for (int i = 0; _objects[i] != NULL; i++) {
-		_objects[i]->is_focused = UI_is_point_within_object(_mouse, _objects[i]);
+	for (int i = 0; ui_items[i] != NULL; i++) {
+		ui_items[i]->is_focused = UI_is_point_within_drawable(ui_mouse, ui_items[i]);
 	}
 
-	if (event_mouse_button_down() && event_mouse_left_button_down()) {
-		// Select
-		if (drag_object == NULL) {
-			for (int i = 0; _objects[i] != NULL; i++) {
-				if (_objects[i]->is_focused) {
-					drag_object = _objects[i];
-					drag_offset = UIPoint_with_offset(_objects[i]->loc, -_mouse.x, -_mouse.y);
-				}
-			}
-		}
-		// Deselect
-		else 
-			drag_object = NULL;
-	}
-	else if (drag_object != NULL)
+	if (ui_drag.target != NULL) {
 		// DRAGGING
-		drag_object->loc = UIPoint_with_offset(drag_offset, _mouse.x, _mouse.y);
+		ui_drag.target->loc = UIPoint_with_offset(ui_drag.offset, ui_mouse.x, ui_mouse.y);
+
+		if (event_mask & UI_Event_Mouse_Up)
+			ui_drag.target = NULL;
+	}
+
+	/*
 	// Keyboard
 	for (int i = 0; i < 12; i++) {
 		if (event_key(index_to_note(i))) {
@@ -132,16 +103,66 @@ bool UI_next() {
 			else if (event_key_up())
 				Audio_disable_note(i);
 		}
+	}*/
+
+	UIEventMask mask_for_object;
+
+	for (int i = 0; ui_items[i] != NULL; i++) {
+		ObjType t = ui_items[i]->object->type;
+
+		mask_for_object = UI_is_point_within_drawable(ui_mouse, ui_items[i]) ? event_mask : event_mask & ~(UI_Event_Mouse_Down | UI_Event_Mouse_Up);
+		if (obj_get_event_mask(t) & event_mask) {
+			al_set_target_bitmap(ui_items[i]->bitmap);
+			al_clear_to_color(al_map_rgba(0, 0, 0, 0));
+			obj_get_draw(t)(ui_items[i]->object, mask_for_object, ui_mouse, &ev);
+		}
 	}
 
 	// Draw Phase
-	al_clear_to_color(al_map_rgb(0xFF, 0xFF, 0xFF));
+	al_set_target_bitmap(al_get_backbuffer(ui_display)); // Go back to drawing to the display
 
-	for (int i = 0; _objects[i] != NULL; i++) {
-		_draw_handlers[UITYPE_KEYBOARD](_objects[i], _mouse);
+	// Now draw each bitmap and connections
+	for (int i = 0; ui_items[i] != NULL; i++) {
+		al_draw_bitmap(ui_items[i]->bitmap, ui_items[i]->loc.x-UI_BITMAP_BUFFER, ui_items[i]->loc.y-UI_BITMAP_BUFFER, 0x00);
+
+		// Connection
+		if (ui_items[i]->object->next != NULL) {
+			UI_draw_line(
+				UIPoint_with_offset(ui_items[i]->loc, ui_items[i]->size.width, ui_items[i]->size.height/2),
+				UIPoint_with_offset(ui_items[i]->object->next->ui->loc, 0, ui_items[i]->object->next->ui->size.height/2)
+			);
+		}
+	}
+
+	// Draw IO boxes
+	for (int i = 0; ui_items[i] != NULL; i++) {
+		ObjType t = ui_items[i]->object->type;
+
+		if (obj_get_input(t) != IONone) {
+			UI_draw_box(
+				ui_items[i]->loc.x - UI_IO_SIZE/2,
+				ui_items[i]->loc.y + ui_items[i]->size.height/2 - UI_IO_SIZE/2,
+				UISize_with_bounds(UI_IO_SIZE, UI_IO_SIZE),
+				obj_get_input(t) == IOControl ? UI_COLOR_CONTROL : UI_COLOR_AUDIO
+			);
+		}
+		else {
+			// Must be an audio source if there is no input node, so tell audio module
+			// @todo Move this to somewhere more obvious
+			Audio_set_source(ui_items[i]->object);
+		}
+
+		if (obj_get_output(t) != IONone)
+			UI_draw_box(
+				ui_items[i]->loc.x + ui_items[i]->size.width - UI_IO_SIZE/2,
+				ui_items[i]->loc.y + ui_items[i]->size.height/2 - UI_IO_SIZE/2,
+				UISize_with_bounds(UI_IO_SIZE, UI_IO_SIZE),
+				obj_get_output(t) == IOControl ? UI_COLOR_CONTROL : UI_COLOR_AUDIO
+			);
 	}
 
 	al_flip_display();
+	al_clear_to_color(UI_COLOR_WHITE); // Clear after flip - that way the buffer is cleared ready, lower latency
 
 	return true;
 }
@@ -164,58 +185,55 @@ UISize UISize_with_bounds(int width, int height) {
 	return s;
 }
 
-UIObject* UIObject_with(UIPoint loc, int z_order, char* label) {
-	UIObject *o = malloc(sizeof(UIObject));
+UIDrawable *UIDrawable_with(struct Object *o, int z_order, UIPoint loc) {
+	UIDrawable *d = malloc(sizeof(UIDrawable));
 
-	o->loc        = loc;
-	o->is_focused = false;
-	o->z_order    = z_order;
-	o->label      = label;
-	o->size       = UISize_with_bounds(200, 400);
-	o->next       = NULL;
-	o->type       = UITYPE_KEYBOARD;
+	d->object  = o;
+	d->z_order = z_order;
+	d->loc     = loc;
+	d->size    = obj_get_size(o->type); // Set the size to be the UISize defined by the module
+	d->bitmap  = al_create_bitmap(d->size.width + UI_BITMAP_BUFFER*2, d->size.height + UI_BITMAP_BUFFER*2); // Derive bitmap size from retrieved UISize
 
-	return o;
+	return d;
 }
 
-void UI_draw_box(UIPoint p, UISize s, unsigned fill_color) {
-	filled_rectangle(p.x, p.y, p.x+s.width, p.y+s.height, fill_color);
-	setcolor(BLACK);
-	rectangle(p.x, p.y, p.x+s.width, p.y+s.height, 4);
+void UI_draw_title(int x, int y, char *text) {
+	static ALLEGRO_FONT *font = NULL;
+	
+	if (!font)
+		font = al_load_ttf_font("data/Roboto-Medium.ttf", 42, 0);
+	
+	al_draw_text(font, UI_COLOR_BLACK, x, y, ALLEGRO_ALIGN_CENTRE, text);
+}
+
+void UI_draw_label(int x, int y, char *text) {
+	static ALLEGRO_FONT *font = NULL;
+	
+	if (!font)
+		font = al_load_ttf_font("data/Roboto-Medium.ttf", 28, 0);
+	
+	al_draw_text(font, UI_COLOR_BLACK, x, y, ALLEGRO_ALIGN_CENTRE, text);
+}
+
+void UI_draw_ellipse(int x, int y, UISize s, ALLEGRO_COLOR fill_color) {
+	float rx = s.width/2;
+	float ry = s.height/2;
+	float cx = x + rx;
+	float cy = y + ry;
+	al_draw_filled_ellipse(cx, cy, rx, ry, fill_color);
+	al_draw_ellipse(cx, cy, rx, ry, UI_COLOR_BLACK, 4);
+}
+
+void UI_draw_box(int x, int y, UISize s, ALLEGRO_COLOR fill_color) {
+	al_draw_filled_rectangle(x, y, x+s.width, y+s.height, fill_color);
+	al_draw_rectangle(x, y, x+s.width, y+s.height, UI_COLOR_BLACK, 4);
 }
 
 void UI_draw_line(UIPoint p1, UIPoint p2) {
-	setcolor(BLACK);
-	line(p1.x, p1.y, p2.x, p2.y, 2);
+	al_draw_line(p1.x, p1.y, p2.x, p2.y, UI_COLOR_BLACK, 2);
 }
 
-void UI_draw_object(UIObject *o) {
-	unsigned color;
-
-	if (o == drag_object)
-		color = RED;
-	else if (o->is_focused)
-		color = YELLOW;
-	else
-		color = WHITE;
-
-	UI_draw_box(o->loc, o->size, color); 
-
-	// There is a connection
-	if (o->next != NULL)
-		UI_draw_line(UIPoint_with_offset(o->loc, o->size.width, 30), UIPoint_with_offset(o->next->loc, 0, 30));
-
-	// Connecting nodes
-	UI_draw_box(UIPoint_with_offset(o->loc, -10, +20),              UISize_with_bounds(20, 20), GREEN);
-	UI_draw_box(UIPoint_with_offset(o->loc, o->size.width-10, +20), UISize_with_bounds(20, 20), GREEN);
-
-	setcolor(BLACK);
-	al_draw_text(_font, al_map_rgb(0, 0, 0), o->loc.x+o->size.width/2, o->loc.y+10, ALLEGRO_ALIGN_CENTRE, o->label);
+bool UI_is_point_within_drawable(UIPoint p, UIDrawable *d) {
+	return (WITHIN(p.x, d->loc.x, d->loc.x + d->size.width) &&
+            WITHIN(p.y, d->loc.y, d->loc.y + d->size.height));
 }
-
-
-bool UI_is_point_within_object(UIPoint p, UIObject *o) {
-	return (WITHIN(p.x, o->loc.x, o->loc.x+o->size.width) &&
-            WITHIN(p.y, o->loc.y, o->loc.y+o->size.height));
-}
-

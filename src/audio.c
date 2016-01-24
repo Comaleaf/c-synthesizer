@@ -1,10 +1,17 @@
 #include "audio.h"
 
+#include "object.h"
 #include <amio_lib.h>
 #include <math.h>
 
 AudioBufferData _data;
 AUDIOSTREAM _stream;
+
+Object *audio_source = NULL;
+
+void Audio_set_source(struct Object *o) {
+	audio_source = o;
+}
 
 static int _Audio_pa_buffer_callback(const void *inputBuffer,
                                      void *outputBuffer,
@@ -119,6 +126,12 @@ static int _Audio_pa_buffer_callback(const void *inputBuffer, void *outputBuffer
                                      const PaStreamCallbackTimeInfo* timeInfo,
                                      PaStreamCallbackFlags statusFlags,
                                      void *userData) {
+	Object *o = audio_source;
+
+	while (o != NULL) {
+		obj_get_process(o->type)(o, inputBuffer, outputBuffer, framesPerBuffer, timeInfo, statusFlags, userData);
+	}
+
     AudioBufferData *data = (AudioBufferData*)userData;
     float *out = (float*)outputBuffer;
 
