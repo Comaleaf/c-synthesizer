@@ -24,67 +24,97 @@ int Keyboard_note_to_index(char n) {
 	return -1;
 }
 
-void Keyboard_draw_object(Object *o, UIEventMask event_mask, UIPoint loc, ALLEGRO_EVENT *ev) {
-	Keyboard *kb = o->data;
-
-	if (event_mask & UI_Event_Mouse_Down) {
-		UI_set_drag_object(o);
-	}
-	else if (event_mask & UI_Event_Key_Down) {
-		int note = Keyboard_note_to_index(ev->keyboard.keycode);
-		if (note >= 0) 
-			kb->key_pressed[note] = true;
-	}
-	else if (event_mask & UI_Event_Key_Up) {
-		int note = Keyboard_note_to_index(ev->keyboard.keycode);
-		if (note >= 0) 
-			kb->key_pressed[note] = false;
+char* Keyboard_note_to_char(int index) {
+	switch (index) {
+		case 0:  return "Q";
+		case 1:  return "2";
+		case 2:  return "W";
+		case 3:  return "3";
+		case 4:  return "E";
+		case 5:  return "R";
+		case 6:  return "5";
+		case 7:  return "T";
+		case 8:  return "6";
+		case 9:  return "Y";
+		case 10: return "7";
+		case 11: return "U";
 	}
 	
-	// Draw outline
-	UI_draw_box(UI_BITMAP_BUFFER, UI_BITMAP_BUFFER, o->ui->size, UI_COLOR_WHITE);
+	return "";
+}
 
+static inline bool Keyboard_is_black_key(int k) {
+    return (k & 0x1) != (k > 4); // Logical xor
+}
+
+static inline ALLEGRO_COLOR Keyboard_color_for_key(Keyboard *kb, int k) {
+    if (kb->key_pressed[k])
+        return KEYBOARD_COLOR_PRESSED;
+    else {
+        if (Keyboard_is_black_key(k))
+            return UI_COLOR_GRAY;
+        else
+            return UI_COLOR_WHITE;
+    }
+}
+
+void Keyboard_draw_object(Object *o, bool is_selected, UIPoint loc, ALLEGRO_EVENT *ev) {
+	Keyboard *kb = o->data;
+	int note;
+	
+	switch (ev->type) {
+		case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
+			UI_set_target(o, UITargetObject);
+			break;
+		case ALLEGRO_EVENT_KEY_DOWN:
+		case ALLEGRO_EVENT_KEY_UP:
+			note = Keyboard_note_to_index(ev->keyboard.keycode);
+			if (note >= 0)
+				kb->key_pressed[note] = (ev->type == ALLEGRO_EVENT_KEY_DOWN);
+	}
+	
 	// Draw keys
 	int key_width  = KEYBOARD_WIDTH  / 2;
 	int key_height = KEYBOARD_HEIGHT / 7;
-	UISize white_key_size = UISize_with_bounds(KEYBOARD_WIDTH, key_height);
-	UISize black_key_size = UISize_with_bounds(key_width, key_height);
+	
+	UIRect key_rect = UIRect_points(UIPoint_margin, UIPoint_xy(KEYBOARD_WIDTH, key_height));
+	
+	// Draw white keys first
+	for (int i = 11; i >= 0; i--) {
+		if (Keyboard_is_black_key(i))
+			continue;
+		
+        UI_draw_box(key_rect, Keyboard_color_for_key(kb, i));
+		UI_draw_label(UIPoint_offset(key_rect.loc, key_width * 1.5f, 6), Keyboard_note_to_char(i));
+		key_rect.loc.y += key_height;
+	}
+	
+	// Then draw blacks over the top
+	// (It would be faster to do it in order, but then the user wouldn't see half of the keys)
+	key_rect.loc.y = UI_MARGIN + key_height/2;
+	key_rect.size = UIPoint_xy(key_width, key_height);
+	for (int i = 11; i >= 0; i--) {
+		if (!Keyboard_is_black_key(i))
+			continue;
+		
+        UI_draw_box(key_rect, Keyboard_color_for_key(kb, i));
+		UI_draw_label(UIPoint_offset(key_rect.loc, key_width/2, 6), Keyboard_note_to_char(i));
+		key_rect.loc.y += key_height;
+		
+		// Make sure to leave a gap where there's no black key
+		if (!Keyboard_is_black_key(i-2))
+			key_rect.loc.y += key_height;
+	}
 
-	UI_draw_box(UI_BITMAP_BUFFER, UI_BITMAP_BUFFER+ 0*key_height, white_key_size, KEYBOARD_COLOR_RESOLVE(11, kb, UI_COLOR_WHITE));
-	UI_draw_box(UI_BITMAP_BUFFER, UI_BITMAP_BUFFER+ 1*key_height, white_key_size, KEYBOARD_COLOR_RESOLVE(9, kb, UI_COLOR_WHITE)); 
-	UI_draw_box(UI_BITMAP_BUFFER, UI_BITMAP_BUFFER+ 2*key_height, white_key_size, KEYBOARD_COLOR_RESOLVE(7, kb, UI_COLOR_WHITE));
-	UI_draw_box(UI_BITMAP_BUFFER, UI_BITMAP_BUFFER+ 3*key_height, white_key_size, KEYBOARD_COLOR_RESOLVE(5, kb, UI_COLOR_WHITE));
-	UI_draw_box(UI_BITMAP_BUFFER, UI_BITMAP_BUFFER+ 4*key_height, white_key_size, KEYBOARD_COLOR_RESOLVE(4, kb, UI_COLOR_WHITE));
-	UI_draw_box(UI_BITMAP_BUFFER, UI_BITMAP_BUFFER+ 5*key_height, white_key_size, KEYBOARD_COLOR_RESOLVE(2, kb, UI_COLOR_WHITE));
-	UI_draw_box(UI_BITMAP_BUFFER, UI_BITMAP_BUFFER+ 6*key_height, white_key_size, KEYBOARD_COLOR_RESOLVE(0, kb, UI_COLOR_WHITE));
-
-	UI_draw_box(UI_BITMAP_BUFFER, UI_BITMAP_BUFFER+ 0.5*key_height, black_key_size, KEYBOARD_COLOR_RESOLVE(10, kb, UI_COLOR_GRAY));
-	UI_draw_box(UI_BITMAP_BUFFER, UI_BITMAP_BUFFER+ 1.5*key_height, black_key_size, KEYBOARD_COLOR_RESOLVE(8, kb, UI_COLOR_GRAY));
-	UI_draw_box(UI_BITMAP_BUFFER, UI_BITMAP_BUFFER+ 2.5*key_height, black_key_size, KEYBOARD_COLOR_RESOLVE(6, kb, UI_COLOR_GRAY));
-	UI_draw_box(UI_BITMAP_BUFFER, UI_BITMAP_BUFFER+ 4.5*key_height, black_key_size, KEYBOARD_COLOR_RESOLVE(3, kb, UI_COLOR_GRAY));
-	UI_draw_box(UI_BITMAP_BUFFER, UI_BITMAP_BUFFER+ 5.5*key_height, black_key_size, KEYBOARD_COLOR_RESOLVE(1, kb, UI_COLOR_GRAY));
-
-	UI_draw_label(UI_BITMAP_BUFFER+ key_width*1.5f, UI_BITMAP_BUFFER+5+ 6.f*key_height, "Q");
-	UI_draw_label(UI_BITMAP_BUFFER+ key_width*0.5f, UI_BITMAP_BUFFER+5+ 5.5f*key_height, "2");
-	UI_draw_label(UI_BITMAP_BUFFER+ key_width*1.5f, UI_BITMAP_BUFFER+5+ 5.f*key_height, "W");
-	UI_draw_label(UI_BITMAP_BUFFER+ key_width*0.5f, UI_BITMAP_BUFFER+5+ 4.5f*key_height, "3");
-	UI_draw_label(UI_BITMAP_BUFFER+ key_width*1.5f, UI_BITMAP_BUFFER+5+ 4.f*key_height, "E");
-	UI_draw_label(UI_BITMAP_BUFFER+ key_width*1.5f, UI_BITMAP_BUFFER+5+ 3.f*key_height, "R");
-	UI_draw_label(UI_BITMAP_BUFFER+ key_width*0.5f, UI_BITMAP_BUFFER+5+ 2.5f*key_height, "5");
-	UI_draw_label(UI_BITMAP_BUFFER+ key_width*1.5f, UI_BITMAP_BUFFER+5+ 2.f*key_height, "T");
-	UI_draw_label(UI_BITMAP_BUFFER+ key_width*0.5f, UI_BITMAP_BUFFER+5+ 1.5f*key_height, "6");
-	UI_draw_label(UI_BITMAP_BUFFER+ key_width*1.5f, UI_BITMAP_BUFFER+5+ 1.f*key_height, "Y");
-	UI_draw_label(UI_BITMAP_BUFFER+ key_width*0.5f, UI_BITMAP_BUFFER+5+ 0.5f*key_height, "7");
-	UI_draw_label(UI_BITMAP_BUFFER+ key_width*1.5f, UI_BITMAP_BUFFER+5, "U");
+	// Draw IO nodes
+	UI_draw_circle(UIPoint_add(UIPoint_margin, UI_io_point_for_drawable(o->ui, false)), UI_IO_SIZE, UI_COLOR_CONTROL);
 }
 
 void *Keyboard_alloc() {
 	return calloc(1, sizeof(Keyboard));
 }
 
-void Keyboard_process(Object *o, const void *input_buffer, const void *output_buffer, unsigned long frames_per_buffer,
-                      const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags status_flags, 
-                      void *user_data) {
+void Keyboard_process(Object *o, AudioPhaseDataList *phase_data, unsigned long frames, float *buffer) {
 	Keyboard *kb = o->data;
 
 	for (int i = 0; i < 12; i++) {
@@ -102,8 +132,7 @@ void Keyboard_init() {
 		&Keyboard_process,
 		&Keyboard_alloc,
 		&Keyboard_draw_object,
-		UI_Event_Key_Down | UI_Event_Key_Up | UI_Event_Mouse_Down | UI_Event_Mouse_Up,
-		UISize_with_bounds(KEYBOARD_WIDTH, KEYBOARD_HEIGHT),
+		UIPoint_xy(KEYBOARD_WIDTH, KEYBOARD_HEIGHT),
 		IONone,
 		IOControl
 	);

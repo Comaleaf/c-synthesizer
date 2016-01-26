@@ -1,0 +1,348 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		8987B6191C55745B00D92C6E /* liballegro_font.5.1.12.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8987B5E81C55745B00D92C6E /* liballegro_font.5.1.12.dylib */; };
+		8987B61F1C55745B00D92C6E /* liballegro_main.5.1.12.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8987B5EE1C55745B00D92C6E /* liballegro_main.5.1.12.dylib */; };
+		8987B6281C55745B00D92C6E /* liballegro_primitives.5.1.12.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8987B5F71C55745B00D92C6E /* liballegro_primitives.5.1.12.dylib */; };
+		8987B62B1C55745B00D92C6E /* liballegro_ttf.5.1.12.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8987B5FA1C55745B00D92C6E /* liballegro_ttf.5.1.12.dylib */; };
+		8987B6311C55745B00D92C6E /* liballegro.5.1.12.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8987B6001C55745B00D92C6E /* liballegro.5.1.12.dylib */; };
+		8987B6411C5575ED00D92C6E /* assignment.c in Sources */ = {isa = PBXBuildFile; fileRef = 8987B6401C5575ED00D92C6E /* assignment.c */; };
+		8987B6431C5575F200D92C6E /* audio.c in Sources */ = {isa = PBXBuildFile; fileRef = 8987B6421C5575F200D92C6E /* audio.c */; };
+		8987B6531C55761800D92C6E /* keyboard.c in Sources */ = {isa = PBXBuildFile; fileRef = 8987B64A1C55761800D92C6E /* keyboard.c */; };
+		8987B6551C55761800D92C6E /* lfo.c in Sources */ = {isa = PBXBuildFile; fileRef = 8987B64C1C55761800D92C6E /* lfo.c */; };
+		8987B6571C55761800D92C6E /* object.c in Sources */ = {isa = PBXBuildFile; fileRef = 8987B64E1C55761800D92C6E /* object.c */; };
+		8987B6591C55761800D92C6E /* oscillator.c in Sources */ = {isa = PBXBuildFile; fileRef = 8987B6501C55761800D92C6E /* oscillator.c */; };
+		8987B65E1C55761D00D92C6E /* ui.c in Sources */ = {isa = PBXBuildFile; fileRef = 8987B65C1C55761D00D92C6E /* ui.c */; };
+		8987B6741C55780100D92C6E /* liballegro_image.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8987B6731C55780100D92C6E /* liballegro_image.dylib */; };
+		8987B6761C55781300D92C6E /* libportaudio.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8987B6751C55781300D92C6E /* libportaudio.dylib */; };
+		8987B6821C55819100D92C6E /* Roboto-Medium.ttf in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8987B6811C55819100D92C6E /* Roboto-Medium.ttf */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		8987B5D21C55739500D92C6E /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 12;
+			dstPath = "";
+			dstSubfolderSpec = 16;
+			files = (
+				8987B6821C55819100D92C6E /* Roboto-Medium.ttf in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		8987B5CE1C55734500D92C6E /* include */ = {isa = PBXFileReference; lastKnownFileType = folder; name = include; path = ../../include; sourceTree = "<group>"; };
+		8987B5CF1C55735300D92C6E /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; name = src; path = ../../src; sourceTree = "<group>"; };
+		8987B5D41C55739500D92C6E /* assessment */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = assessment; sourceTree = BUILT_PRODUCTS_DIR; };
+		8987B5E81C55745B00D92C6E /* liballegro_font.5.1.12.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = liballegro_font.5.1.12.dylib; path = ../../../../../usr/local/Cellar/allegro/5.1.12/lib/liballegro_font.5.1.12.dylib; sourceTree = "<group>"; };
+		8987B5EE1C55745B00D92C6E /* liballegro_main.5.1.12.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = liballegro_main.5.1.12.dylib; path = ../../../../../usr/local/Cellar/allegro/5.1.12/lib/liballegro_main.5.1.12.dylib; sourceTree = "<group>"; };
+		8987B5F71C55745B00D92C6E /* liballegro_primitives.5.1.12.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = liballegro_primitives.5.1.12.dylib; path = ../../../../../usr/local/Cellar/allegro/5.1.12/lib/liballegro_primitives.5.1.12.dylib; sourceTree = "<group>"; };
+		8987B5FA1C55745B00D92C6E /* liballegro_ttf.5.1.12.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = liballegro_ttf.5.1.12.dylib; path = ../../../../../usr/local/Cellar/allegro/5.1.12/lib/liballegro_ttf.5.1.12.dylib; sourceTree = "<group>"; };
+		8987B6001C55745B00D92C6E /* liballegro.5.1.12.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = liballegro.5.1.12.dylib; path = ../../../../../usr/local/Cellar/allegro/5.1.12/lib/liballegro.5.1.12.dylib; sourceTree = "<group>"; };
+		8987B6041C55745B00D92C6E /* libportaudio.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libportaudio.a; path = ../../../../../usr/local/Cellar/portaudio/19.20140130/lib/libportaudio.a; sourceTree = "<group>"; };
+		8987B6401C5575ED00D92C6E /* assignment.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = assignment.c; path = ../src/assignment.c; sourceTree = "<group>"; };
+		8987B6421C5575F200D92C6E /* audio.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = audio.c; path = ../src/audio.c; sourceTree = "<group>"; };
+		8987B6441C5575F500D92C6E /* audio.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = audio.h; path = ../src/audio.h; sourceTree = "<group>"; };
+		8987B64A1C55761800D92C6E /* keyboard.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = keyboard.c; path = ../src/objects/keyboard.c; sourceTree = "<group>"; };
+		8987B64B1C55761800D92C6E /* keyboard.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = keyboard.h; path = ../src/objects/keyboard.h; sourceTree = "<group>"; };
+		8987B64C1C55761800D92C6E /* lfo.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = lfo.c; path = ../src/objects/lfo.c; sourceTree = "<group>"; };
+		8987B64D1C55761800D92C6E /* lfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = lfo.h; path = ../src/objects/lfo.h; sourceTree = "<group>"; };
+		8987B64E1C55761800D92C6E /* object.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = object.c; path = ../src/objects/object.c; sourceTree = "<group>"; };
+		8987B64F1C55761800D92C6E /* object.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = object.h; path = ../src/objects/object.h; sourceTree = "<group>"; };
+		8987B6501C55761800D92C6E /* oscillator.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = oscillator.c; path = ../src/objects/oscillator.c; sourceTree = "<group>"; };
+		8987B6511C55761800D92C6E /* oscillator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = oscillator.h; path = ../src/objects/oscillator.h; sourceTree = "<group>"; };
+		8987B6521C55761800D92C6E /* types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = types.h; path = ../src/objects/types.h; sourceTree = "<group>"; };
+		8987B65C1C55761D00D92C6E /* ui.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = ui.c; path = ../src/ui.c; sourceTree = "<group>"; };
+		8987B65D1C55761D00D92C6E /* ui.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ui.h; path = ../src/ui.h; sourceTree = "<group>"; };
+		8987B6611C55764D00D92C6E /* amio_lib_functions.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = amio_lib_functions.c; path = ../include/amio_lib_functions.c; sourceTree = "<group>"; };
+		8987B6621C55764D00D92C6E /* amio_lib.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = amio_lib.h; path = ../include/amio_lib.h; sourceTree = "<group>"; };
+		8987B6631C55764D00D92C6E /* graphics_lib_functions.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = graphics_lib_functions.c; path = ../include/graphics_lib_functions.c; sourceTree = "<group>"; };
+		8987B6641C55764D00D92C6E /* graphics_lib.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = graphics_lib.h; path = ../include/graphics_lib.h; sourceTree = "<group>"; };
+		8987B6661C55764D00D92C6E /* license.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = license.h; path = ../include/license.h; sourceTree = "<group>"; };
+		8987B6731C55780100D92C6E /* liballegro_image.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = liballegro_image.dylib; path = ../../../../../usr/local/lib/liballegro_image.dylib; sourceTree = "<group>"; };
+		8987B6751C55781300D92C6E /* libportaudio.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libportaudio.dylib; path = ../../../../../usr/local/lib/libportaudio.dylib; sourceTree = "<group>"; };
+		8987B67B1C557E8D00D92C6E /* data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = data; path = ../../data; sourceTree = "<group>"; };
+		8987B6811C55819100D92C6E /* Roboto-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Roboto-Medium.ttf"; path = "../data/Roboto-Medium.ttf"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8987B5D11C55739500D92C6E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8987B61F1C55745B00D92C6E /* liballegro_main.5.1.12.dylib in Frameworks */,
+				8987B6191C55745B00D92C6E /* liballegro_font.5.1.12.dylib in Frameworks */,
+				8987B6281C55745B00D92C6E /* liballegro_primitives.5.1.12.dylib in Frameworks */,
+				8987B62B1C55745B00D92C6E /* liballegro_ttf.5.1.12.dylib in Frameworks */,
+				8987B6741C55780100D92C6E /* liballegro_image.dylib in Frameworks */,
+				8987B6311C55745B00D92C6E /* liballegro.5.1.12.dylib in Frameworks */,
+				8987B6761C55781300D92C6E /* libportaudio.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		8987B5C71C55731F00D92C6E = {
+			isa = PBXGroup;
+			children = (
+				8987B6811C55819100D92C6E /* Roboto-Medium.ttf */,
+				8987B6751C55781300D92C6E /* libportaudio.dylib */,
+				8987B6731C55780100D92C6E /* liballegro_image.dylib */,
+				8987B6611C55764D00D92C6E /* amio_lib_functions.c */,
+				8987B6621C55764D00D92C6E /* amio_lib.h */,
+				8987B6631C55764D00D92C6E /* graphics_lib_functions.c */,
+				8987B6641C55764D00D92C6E /* graphics_lib.h */,
+				8987B6661C55764D00D92C6E /* license.h */,
+				8987B65C1C55761D00D92C6E /* ui.c */,
+				8987B65D1C55761D00D92C6E /* ui.h */,
+				8987B64A1C55761800D92C6E /* keyboard.c */,
+				8987B64B1C55761800D92C6E /* keyboard.h */,
+				8987B64C1C55761800D92C6E /* lfo.c */,
+				8987B64D1C55761800D92C6E /* lfo.h */,
+				8987B64E1C55761800D92C6E /* object.c */,
+				8987B64F1C55761800D92C6E /* object.h */,
+				8987B6501C55761800D92C6E /* oscillator.c */,
+				8987B6511C55761800D92C6E /* oscillator.h */,
+				8987B6521C55761800D92C6E /* types.h */,
+				8987B6441C5575F500D92C6E /* audio.h */,
+				8987B6421C5575F200D92C6E /* audio.c */,
+				8987B6401C5575ED00D92C6E /* assignment.c */,
+				8987B5E81C55745B00D92C6E /* liballegro_font.5.1.12.dylib */,
+				8987B5EE1C55745B00D92C6E /* liballegro_main.5.1.12.dylib */,
+				8987B5F71C55745B00D92C6E /* liballegro_primitives.5.1.12.dylib */,
+				8987B5FA1C55745B00D92C6E /* liballegro_ttf.5.1.12.dylib */,
+				8987B6001C55745B00D92C6E /* liballegro.5.1.12.dylib */,
+				8987B6041C55745B00D92C6E /* libportaudio.a */,
+				8987B5D61C55739500D92C6E /* assessment */,
+				8987B5D51C55739500D92C6E /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		8987B5D51C55739500D92C6E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8987B5D41C55739500D92C6E /* assessment */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8987B5D61C55739500D92C6E /* assessment */ = {
+			isa = PBXGroup;
+			children = (
+				8987B67B1C557E8D00D92C6E /* data */,
+				8987B5CF1C55735300D92C6E /* src */,
+				8987B5CE1C55734500D92C6E /* include */,
+			);
+			path = assessment;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8987B5D31C55739500D92C6E /* assessment */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8987B5D91C55739500D92C6E /* Build configuration list for PBXNativeTarget "assessment" */;
+			buildPhases = (
+				8987B5D01C55739500D92C6E /* Sources */,
+				8987B5D11C55739500D92C6E /* Frameworks */,
+				8987B5D21C55739500D92C6E /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = assessment;
+			productName = assessment;
+			productReference = 8987B5D41C55739500D92C6E /* assessment */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		8987B5C81C55731F00D92C6E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0720;
+				TargetAttributes = {
+					8987B5D31C55739500D92C6E = {
+						CreatedOnToolsVersion = 7.2;
+					};
+				};
+			};
+			buildConfigurationList = 8987B5CB1C55731F00D92C6E /* Build configuration list for PBXProject "c-assessment-elec-yr1" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 8987B5C71C55731F00D92C6E;
+			productRefGroup = 8987B5D51C55739500D92C6E /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8987B5D31C55739500D92C6E /* assessment */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8987B5D01C55739500D92C6E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8987B6411C5575ED00D92C6E /* assignment.c in Sources */,
+				8987B6431C5575F200D92C6E /* audio.c in Sources */,
+				8987B6531C55761800D92C6E /* keyboard.c in Sources */,
+				8987B6551C55761800D92C6E /* lfo.c in Sources */,
+				8987B6571C55761800D92C6E /* object.c in Sources */,
+				8987B6591C55761800D92C6E /* oscillator.c in Sources */,
+				8987B65E1C55761D00D92C6E /* ui.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		8987B5CC1C55731F00D92C6E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		8987B5CD1C55731F00D92C6E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		8987B5DA1C55739500D92C6E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_PEDANTIC = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					/usr/local,
+					"/usr/local/include/**",
+				);
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				LINK_WITH_STANDARD_LIBRARIES = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		8987B5DB1C55739500D92C6E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_PEDANTIC = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					/usr/local,
+					"/usr/local/include/**",
+				);
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				LINK_WITH_STANDARD_LIBRARIES = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		8987B5CB1C55731F00D92C6E /* Build configuration list for PBXProject "c-assessment-elec-yr1" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8987B5CC1C55731F00D92C6E /* Debug */,
+				8987B5CD1C55731F00D92C6E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8987B5D91C55739500D92C6E /* Build configuration list for PBXNativeTarget "assessment" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8987B5DA1C55739500D92C6E /* Debug */,
+				8987B5DB1C55739500D92C6E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 8987B5C81C55731F00D92C6E /* Project object */;
+}

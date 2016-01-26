@@ -7,7 +7,7 @@
 #define KEYBOARD_HEIGHT 300
 
 #define KEYBOARD_COLOR_PRESSED           UI_COLOR_HIGHLIGHT
-#define KEYBOARD_COLOR_RESOLVE(n, kb, c) (kb->key_pressed[n] ? KEYBOARD_COLOR_PRESSED : c)
+
 
 typedef struct Keyboard {
 	bool key_pressed[12];

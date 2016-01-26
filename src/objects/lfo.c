@@ -1,30 +1,68 @@
 #include "lfo.h"
 
+#include "math.h"
 #include "object.h"
 #include "types.h"
 #include "ui.h"
 
-void LFO_draw_object(Object *o, UIEventMask event_mask, UIPoint loc, ALLEGRO_EVENT *ev) {
-	if (event_mask & UI_Event_Mouse_Down) {
-		//o->is_focused = true;
-		UI_set_drag_object(o);
-	}/*
-	else if (event_mask & UI_Event_Mouse_Up)
-		o->is_focused = false;*/
-
-	UI_draw_ellipse(UI_BITMAP_BUFFER, UI_BITMAP_BUFFER, o->ui->size, UI_COLOR_WHITE); 
-	UI_draw_title(UI_BITMAP_BUFFER + LFO_WIDTH/2, UI_BITMAP_BUFFER+50, "LFO");
-	UI_draw_label(UI_BITMAP_BUFFER + LFO_WIDTH/2, UI_BITMAP_BUFFER+100, "Mod: Volume");
+void LFO_draw_object(Object *o, bool is_selected, UIPoint loc, ALLEGRO_EVENT *ev) {
+	if (ev->type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
+		UI_set_target(o, UITargetObject);
+	}
+	
+	// Background
+	UI_draw_circle(UIPoint_offset(UIPoint_margin, LFO_WIDTH/2, LFO_WIDTH/2), LFO_WIDTH/2, UI_COLOR_WHITE);
+	
+	// Labels
+	UI_draw_title(UIPoint_offset(UIPoint_margin, LFO_WIDTH/2,  50), "LFO");
+	UI_draw_label(UIPoint_offset(UIPoint_margin, LFO_WIDTH/2, 100), "Mod: Volume");
+	
+	// Draw IO nodes
+	UI_draw_circle(UIPoint_add(UIPoint_margin, UI_io_point_for_drawable(o->ui, true)),  UI_IO_SIZE, UI_COLOR_AUDIO);
+	UI_draw_circle(UIPoint_add(UIPoint_margin, UI_io_point_for_drawable(o->ui, false)), UI_IO_SIZE, UI_COLOR_AUDIO);
 }
 
 void *LFO_alloc() {
-	return NULL;
+	LFO *lfo = malloc(sizeof(LFO));
+	lfo->modulation = Volume;
+	lfo->theta = 0.0;
+	return lfo;
 }
 
-void LFO_process(Object *o, const void *input_buffer, const void *output_buffer, unsigned long frames_per_buffer,
-                 const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags status_flags, 
-                 void *user_data) {
-	// do nothing;
+/*
+static float cubic_distort(float input) {
+	float output, temp;
+	if( input < 0.0 )
+		{
+   temp = input + 1.0f;
+   output = (temp * temp * temp) - 1.0f;
+   }
+	else
+		{
+   temp = input - 1.0f;
+   output = (temp * temp * temp) + 1.0f;
+			
+   }
+	return output;
+}*/
+
+#define LFO_FREQUENCY 5.0f
+
+void LFO_process(Object *o, AudioPhaseDataList *phase_data_head, unsigned long frames, float *buffer) {
+	LFO *lfo = o->data;
+	
+	float period = (float)AUDIO_SAMPLE_RATE / (float)LFO_FREQUENCY; // How many frames need to pass for one cycle
+	float increment = (1.0/(float)frames) * M_PI * 2.0f * ((float)frames / period);
+	
+	for (int i = 0; i < frames; i++) {
+		lfo->theta += increment;
+		
+		if (lfo->theta > (M_PI * 2.0))
+			lfo->theta -= (M_PI * 2.0);
+	
+		buffer[(i<<1)]   *= (sinf(lfo->theta) + 1.0);
+		buffer[(i<<1)+1] *= (sinf(lfo->theta) + 1.0);
+	}
 }
 
 void LFO_init() {
@@ -33,8 +71,7 @@ void LFO_init() {
 		&LFO_process,
 		&LFO_alloc,
 		&LFO_draw_object,
-		UI_Event_Mouse_Down | UI_Event_Mouse_Up,
-		UISize_with_bounds(LFO_WIDTH, LFO_HEIGHT),
+		UIPoint_xy(LFO_WIDTH, LFO_HEIGHT),
 		IOPCM,
 		IOPCM
 	);

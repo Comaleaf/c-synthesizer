@@ -1,53 +1,61 @@
 #include "audio.h"
 
 #include "object.h"
-#include <amio_lib.h>
+#include <portaudio.h>
 #include <math.h>
 
-AudioBufferData _data;
-AUDIOSTREAM _stream;
+// Private functions
 
-Object *audio_source = NULL;
+static int Audio_pa_buffer_callback(const void *, void *, unsigned long, const PaStreamCallbackTimeInfo*,
+                                    PaStreamCallbackFlags, void *);
+
+// Private properties
+
+AudioPhaseDataList *audio_phase_data = NULL;
+PaStream *audio_stream = NULL;
+Object   *audio_source = NULL;
+
+float audio_buffer[AUDIO_BUFFER_SIZE*2] = {0};
+
+// Implementation
 
 void Audio_set_source(struct Object *o) {
 	audio_source = o;
 }
 
-static int _Audio_pa_buffer_callback(const void *inputBuffer,
-                                     void *outputBuffer,
-                                     unsigned long framesPerBuffer,
-                                     const PaStreamCallbackTimeInfo* timeInfo,
-                                     PaStreamCallbackFlags statusFlags,
-                                     void *userData);
-
 void Audio_init() {
-    // Initialise sinusoidal wavetable
-	for (int i = 0; i < AUDIO_WAVETABLE_SIZE; i++) {
-		_data.sine[i] = 0.90f * (float) sin( ((double)i/(double)AUDIO_WAVETABLE_SIZE) * M_PI * 2. );
-	}
-
-	_data.sine[AUDIO_WAVETABLE_SIZE] = _data.sine[0]; /* set guard point. */
-	_data.phase_data = NULL;
-
-    _stream.stream          = NULL; // Will get value after openDefaultAudioStream call
-    _stream.sampleRate      = AUDIO_SAMPLE_RATE; // Stream sample rate
-    _stream.sampleFormat    = paFloat32; // Stream sample format (float 32-bit in this case)
-    _stream.inChannels      = 0; // Output-only stream
-    _stream.outChannels     = 2; // Stereo 
-    _stream.framesPerBuffer = AUDIO_BUFFER_SIZE; // Number of frames of the buffers in the processing callback function
-
-    initialiseAudioSystem();
-	openDefaultAudioStream(&_stream, _Audio_pa_buffer_callback, &_data);
-
-	startAudioStream(&_stream);
+    Pa_Initialize();
+    
+    PaStreamParameters params;
+    
+    params.device = Pa_GetDefaultOutputDevice();
+    params.channelCount = 2; // Stereo
+    params.sampleFormat = paFloat32;
+    params.suggestedLatency = Pa_GetDeviceInfo(params.device)->defaultLowOutputLatency;
+    params.hostApiSpecificStreamInfo = NULL;
+    
+    Pa_OpenStream(
+        &audio_stream,
+        NULL, // No input
+        &params,
+        AUDIO_SAMPLE_RATE,
+        AUDIO_BUFFER_SIZE,
+        paClipOff,
+        Audio_pa_buffer_callback,
+        &audio_phase_data);
+	
+	audio_phase_data = NULL;
+	audio_source = NULL;
+	
+    Pa_StartStream(audio_stream);
 }
 
 void Audio_close() {
-	stopAudioStream(&_stream);
+    Pa_StopStream(audio_stream);
 }
 
 void Audio_enable_note(int n) {
-	_AudioLinkedPhase **phase_data = &(_data.phase_data);
+	AudioPhaseDataList **phase_data = &audio_phase_data;
 
 	while (*phase_data != NULL) {
 		if ((*phase_data)->tag == n) {
@@ -59,7 +67,7 @@ void Audio_enable_note(int n) {
 			phase_data = &((*phase_data)->next);
 	}
 
-	_AudioLinkedPhase *new_phase = calloc(1, sizeof(_AudioLinkedPhase));
+	AudioPhaseDataList *new_phase = calloc(1, sizeof(AudioPhaseDataList));
 	new_phase->tag = n;
 	new_phase->increment = (440.0f * pow(1.059463094359, n)) / (float)AUDIO_SAMPLE_RATE;
 
@@ -67,17 +75,18 @@ void Audio_enable_note(int n) {
 }
 
 void Audio_disable_note(int n) {
-	_AudioLinkedPhase **phase_data = &(_data.phase_data);
-	//_AudioLinkedPhase *node_to_delete;
+	if (!audio_phase_data) return;
+	
+	AudioPhaseDataList **phase_data = &audio_phase_data;
+	AudioPhaseDataList *node_to_delete;
 
-	while (*phase_data != NULL) {
+	while (phase_data != NULL && *phase_data != NULL) {
 		if ((*phase_data)->tag == n) {
-		/*
 			// Found it, delete it
 			node_to_delete = *phase_data;
 			*phase_data = node_to_delete->next;
-			free(node_to_delete);*/
-			(*phase_data)->release_time = 1;
+			free(node_to_delete);
+			//(*phase_data)->release_time = 1;
 			return;
 		}
 		else
@@ -85,7 +94,7 @@ void Audio_disable_note(int n) {
 	}
 }
 
-float AudioBufferData_get_value(AudioBufferData *data, float phase) {
+float AudioPhaseDataList_get_value(float phase, float (*wavetable)[]) {
 	// Calculate the offset into the wavetable
     float offset = phase * AUDIO_WAVETABLE_SIZE;
 	// Get the natural part of the offset (which can be used as an index)
@@ -93,11 +102,12 @@ float AudioBufferData_get_value(AudioBufferData *data, float phase) {
 	// Get the rational remainder of the offset
     float remainder = offset - index;
 	// Interpolate between two points, proportional to the remainder
-    float lower = data->sine[index];
-    float upper = data->sine[index+1];
+    float lower = (*wavetable)[index];
+    float upper = (*wavetable)[index+1];
     return lower + remainder*(upper-lower);
 }
 
+/*
 #define AUDIO_SUSTAIN      (0.8f)
 #define AUDIO_ATTACK       (1.0f)
 #define AUDIO_ATTACK_TIME  (2000)
@@ -119,55 +129,29 @@ float Audio_ADSR(int time, int release_time, float data) {
 		else
 			return data * AUDIO_SUSTAIN;
 	}
-}
+}*/
 
-static int _Audio_pa_buffer_callback(const void *inputBuffer, void *outputBuffer,
-                                     unsigned long framesPerBuffer,
-                                     const PaStreamCallbackTimeInfo* timeInfo,
-                                     PaStreamCallbackFlags statusFlags,
-                                     void *userData) {
+
+
+static int Audio_pa_buffer_callback(const void *input, void *output, unsigned long frames,
+                                    const PaStreamCallbackTimeInfo* time, PaStreamCallbackFlags flags, void *data) {
 	Object *o = audio_source;
 
-	while (o != NULL) {
-		obj_get_process(o->type)(o, inputBuffer, outputBuffer, framesPerBuffer, timeInfo, statusFlags, userData);
+    while (o != NULL) {
+		obj_get_process(o->type)(o, audio_phase_data, frames, audio_buffer);
+		o = o->next;
 	}
 
-    AudioBufferData *data = (AudioBufferData*)userData;
-    float *out = (float*)outputBuffer;
-
-    (void) timeInfo; // Prevent unused variable warnings.
-    (void) statusFlags;
-    (void) inputBuffer;
-
-	// Sum phase data
-	_AudioLinkedPhase *phase_data;
-	float out_left, out_right;
-
-    for(int i=0; i<framesPerBuffer; i++) {
-		phase_data = data->phase_data;
-		out_left = out_right = 0.0;
-
-		while (phase_data != NULL) {
-			out_left  += Audio_ADSR(phase_data->time, phase_data->release_time, AudioBufferData_get_value(data, phase_data->left));  /* left */
-			out_right += Audio_ADSR(phase_data->time, phase_data->release_time, AudioBufferData_get_value(data, phase_data->right));  /* right */
-
-			phase_data->left  += phase_data->increment;
-			phase_data->right += phase_data->increment;// * 1.5f; /* fifth above */
-			phase_data->time++;
-
-			if (phase_data->release_time > 0)
-				phase_data->release_time++;
-
-			if (phase_data->left >= 1.0f)  phase_data->left  -= 1.0f;
-			if (phase_data->right >= 1.0f) phase_data->right -= 1.0f;
-
-			phase_data = phase_data->next;
-		}
-
-		*out++ = out_left;
-		*out++ = out_right;
-    }
-
-    return paContinue;
+	// Output buffer contents
+	float *out = output;
+	for (int i = 0; i < frames; i++) {
+		*out++ = audio_buffer[(i<<1)];
+		*out++ = audio_buffer[(i<<1) + 1];
+	}
+	
+	// Clear the buffer for next time
+	memset(audio_buffer, 0, AUDIO_BUFFER_SIZE*2);
+	
+	return paContinue;
 }
 

@@ -1,7 +1,7 @@
-#ifndef __AUDIO_H_
-#define __AUDIO_H_
+#ifndef AUDIO_H_
+#define AUDIO_H_
 
-#include <amio_lib.h>
+#include <portaudio.h>
 
 #define AUDIO_BUFFER_SIZE    (128)
 #define AUDIO_WAVETABLE_SIZE (256)
@@ -21,27 +21,20 @@ void Audio_set_source(struct Object *o);
 
 // Types
 
-typedef void (*AudioProcessCallback)(struct Object *o, const void *input_buffer, const void *output_buffer, unsigned long frames_per_buffer,
-		                             const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags status_flags,
-									 void *user_data);
-
-typedef struct _AudioLinkedPhase {
-	int tag;
-	int time;
-	int release_time;
+typedef struct AudioPhaseDataList {
+	int   tag;
+	int   time;
+	int   release_time;
 	float increment;
 	float left;
 	float right;
-	struct _AudioLinkedPhase *next;
-} _AudioLinkedPhase;
+	struct AudioPhaseDataList *next;
+} AudioPhaseDataList;
 
-typedef struct {
-    float sine[AUDIO_WAVETABLE_SIZE+1];
-	_AudioLinkedPhase *phase_data;
-} AudioBufferData;
+typedef void (*AudioProcessCallback)(struct Object *, AudioPhaseDataList *, unsigned long, float *);
 
-// AudioBufferData
+// AudioPhaseDataList
 
-float AudioBufferData_get_value(AudioBufferData *data, float phase);
+float AudioPhaseDataList_get_value(float phase, float (*wavetable)[]);
 
 #endif

@@ -419,13 +419,13 @@ PaError closeAudioStream(AUDIOSTREAM *stream)
  @result
  */
 
-void pause(int time_in_milliseconds)
+/*void pause(int time_in_milliseconds)
 {
     long time;
 
     time = Pt_Time(NULL);
     while(Pt_Time(NULL) - time < time_in_milliseconds);
-}
+}*/
 
 //-----------------------------------------------------------------------------
 //  midi_note function

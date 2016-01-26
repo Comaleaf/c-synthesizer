@@ -5,7 +5,8 @@
 #define LFO_HEIGHT 200
 
 typedef struct LFO {
-	//enum {Sine, Saw, Square} shape;
+	enum {Volume, Frequency} modulation;
+	float theta;
 } LFO;
 
 void LFO_init();
