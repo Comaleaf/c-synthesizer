@@ -15,9 +15,9 @@ UIRect osc_type_rect;
 
 void Oscillator_draw_object(Object *o, bool is_selected, UIPoint mouse, ALLEGRO_EVENT *ev) {
 	Oscillator *osc = o->data;
-
 	char attack[20], decay[20], sustain[20], release[20], type[20];
 
+	// Update labels for parameters
 	sprintf(attack,  "Attack: %.2f",  osc->attack);
 	sprintf(decay,   "Decay: %.2f",   osc->decay);
 	sprintf(sustain, "Sustain: %.2f", osc->sustain);
@@ -29,40 +29,46 @@ void Oscillator_draw_object(Object *o, bool is_selected, UIPoint mouse, ALLEGRO_
         case Square: strcpy(type, "Type: Square"); break;
     }
 
+	// Draw selection border if necessary
 	if (is_selected)
 		UI_draw_border(UIRect_points(UIPoint_margin, o->ui->size), UI_COLOR_HIGHLIGHT);
 	
+	// Draw container
 	UI_draw_box(UIRect_points(UIPoint_margin, o->ui->size), UI_COLOR_WHITE);
 	
-	bool is_clicking = ev->type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN;
+	// Determine the state of user interaction with the object
+	bool is_clicking     = ev->type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN;
+	bool is_hover_input  = UI_is_point_near_io(mouse, o->ui, true);
+	bool is_hover_output = !is_hover_input && UI_is_point_near_io(mouse, o->ui, false);
+	bool is_hover_type   = !is_hover_input && !is_hover_output && UI_is_point_within_rect(mouse, osc_type_rect);
+
+	// Dispatch necessary actions on click events
+	if (is_clicking) {
+		if      (is_hover_input)  UI_set_target(o, UITargetInput);
+		else if (is_hover_output) UI_set_target(o, UITargetOutput);
+		else if (is_hover_type)   osc->shape = (osc->shape + 1) % 3; // Cycle between the 3 values
+		else                      UI_set_target(o, UITargetObject);
+	}
+
+	// Update UI in response to hover events
+	if (is_hover_input)
+		UI_draw_circle(UIPoint_add_margin(UI_io_point_for_drawable(o->ui, true)), UI_IO_SIZE*1.5, UI_COLOR_BLACK);
+	else if (is_hover_output)
+		UI_draw_circle(UIPoint_add_margin(UI_io_point_for_drawable(o->ui, false)), UI_IO_SIZE*1.5, UI_COLOR_BLACK);
+	else if (is_hover_type)
+		UI_draw_box(osc_type_rect, UI_COLOR_HIGHLIGHT);
 	
-	if (UI_is_point_near_io(mouse, o->ui, true)) {
-		UI_draw_circle(UIPoint_add(UIPoint_margin, UI_io_point_for_drawable(o->ui, true)), UI_IO_SIZE*1.5, UI_COLOR_BLACK);
-		if (is_clicking) UI_set_target(o, UITargetInput);
-	}
-	else if (UI_is_point_near_io(mouse, o->ui, false)) {
-		UI_draw_circle(UIPoint_add(UIPoint_margin, UI_io_point_for_drawable(o->ui, false)), UI_IO_SIZE*1.5, UI_COLOR_BLACK);
-		if (is_clicking)
-			UI_set_target(o, UITargetOutput);
-	}
-	else if (UI_is_point_within_rect(mouse, osc_type_rect)) {
-        UI_draw_box(osc_type_rect, UI_COLOR_HIGHLIGHT);
-		if (is_clicking) osc->shape = (osc->shape + 1) % 3;
-	}
-	else {
-		if (is_clicking) UI_set_target(o, UITargetObject);
-	}
-	
-	UI_draw_title(UIPoint_offset(UIPoint_margin, OSC_WIDTH/2, 10),  "Oscillator");
-	UI_draw_label(UIPoint_offset(UIPoint_margin, OSC_WIDTH/2, 70),  type);
-	UI_draw_label(UIPoint_offset(UIPoint_margin, OSC_WIDTH/2, 100), attack);
-	UI_draw_label(UIPoint_offset(UIPoint_margin, OSC_WIDTH/2, 130), decay);
-	UI_draw_label(UIPoint_offset(UIPoint_margin, OSC_WIDTH/2, 160), sustain);
-	UI_draw_label(UIPoint_offset(UIPoint_margin, OSC_WIDTH/2, 190), release);
+	// Draw all the labels
+	UI_draw_title(UIPoint_offset_margin(OSC_WIDTH/2, 10),  ObjParam(o, name));
+	UI_draw_label(UIPoint_offset_margin(OSC_WIDTH/2, 70),  type);
+	UI_draw_label(UIPoint_offset_margin(OSC_WIDTH/2, 100), attack);
+	UI_draw_label(UIPoint_offset_margin(OSC_WIDTH/2, 130), decay);
+	UI_draw_label(UIPoint_offset_margin(OSC_WIDTH/2, 160), sustain);
+	UI_draw_label(UIPoint_offset_margin(OSC_WIDTH/2, 190), release);
 	
 	// Draw IO nodes
-	UI_draw_circle(UIPoint_add(UIPoint_margin, UI_io_point_for_drawable(o->ui, true)),  UI_IO_SIZE, UI_COLOR_CONTROL);
-	UI_draw_circle(UIPoint_add(UIPoint_margin, UI_io_point_for_drawable(o->ui, false)), UI_IO_SIZE, UI_COLOR_AUDIO);
+	UI_draw_circle(UIPoint_add_margin(UI_io_point_for_drawable(o->ui, true)),  UI_IO_SIZE, UI_COLOR_CONTROL);
+	UI_draw_circle(UIPoint_add_margin(UI_io_point_for_drawable(o->ui, false)), UI_IO_SIZE, UI_COLOR_AUDIO);
 }
 
 void *Oscillator_alloc() {
@@ -132,6 +138,7 @@ void Oscillator_init() {
     // Set-up module
 	obj_set_type_params(
 		TYPE_OSCILLATOR,
+		"Oscillator",
 		&Oscillator_process,
 		&Oscillator_alloc,
 		&Oscillator_draw_object,

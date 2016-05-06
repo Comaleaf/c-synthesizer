@@ -5,6 +5,7 @@
 #define UI_MAX_OBJECTS   100
 #define UI_MARGIN        50    // How much of a buffer to give bitmap drawing (in pixels)
 #define UI_IO_SIZE       10
+#define UI_TOOLBAR_HEIGHT 80
 
 #define UI_WIDTH  1024
 #define UI_HEIGHT 768
@@ -60,6 +61,8 @@ UIPoint UIPoint_offset(UIPoint origin, int x, int y);
 UIPoint UIPoint_add(UIPoint origin, UIPoint s);
 UIPoint UIPoint_subtract(UIPoint p1, UIPoint p2);
 extern UIPoint UIPoint_margin;
+#define UIPoint_add_margin(p)       (UIPoint_add(UIPoint_margin, p))
+#define UIPoint_offset_margin(x, y) (UIPoint_offset(UIPoint_margin, x, y))
 
 UIPoint UIPoint_xy(int width, int height);
 

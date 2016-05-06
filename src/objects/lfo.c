@@ -5,21 +5,40 @@
 #include "types.h"
 #include "ui.h"
 
-void LFO_draw_object(Object *o, bool is_selected, UIPoint loc, ALLEGRO_EVENT *ev) {
-	if (ev->type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
-		UI_set_target(o, UITargetObject);
-	}
+void LFO_draw_object(Object *o, bool is_selected, UIPoint mouse, ALLEGRO_EVENT *ev) {
+	// Determine the state of user interaction with the object
+	bool is_clicking     = ev->type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN;
+	bool is_hover_input  = UI_is_point_near_io(mouse, o->ui, true);
+	bool is_hover_output = !is_hover_input && UI_is_point_near_io(mouse, o->ui, false);
+	
+	// Draw selection border if necessary
+	if (is_selected)
+		UI_draw_border(UIRect_points(UIPoint_margin, o->ui->size), UI_COLOR_HIGHLIGHT);
 	
 	// Background
-	UI_draw_circle(UIPoint_offset(UIPoint_margin, LFO_WIDTH/2, LFO_WIDTH/2), LFO_WIDTH/2, UI_COLOR_WHITE);
+	UI_draw_circle(UIPoint_offset_margin(LFO_WIDTH/2, LFO_WIDTH/2), LFO_WIDTH/2, UI_COLOR_WHITE);
 	
 	// Labels
-	UI_draw_title(UIPoint_offset(UIPoint_margin, LFO_WIDTH/2,  50), "LFO");
-	UI_draw_label(UIPoint_offset(UIPoint_margin, LFO_WIDTH/2, 100), "Mod: Volume");
+	UI_draw_title(UIPoint_offset_margin(LFO_WIDTH/2,  50), ObjParam(o, name));
+	UI_draw_label(UIPoint_offset_margin(LFO_WIDTH/2, 100), "Mod: Volume");
 	
+	// Dispatch necessary actions on click events
+	if (is_clicking) {
+		if      (is_hover_input)  UI_set_target(o, UITargetInput);
+		else if (is_hover_output) UI_set_target(o, UITargetOutput);
+		else                      UI_set_target(o, UITargetObject);
+	}
+
+	// Update UI in response to hover events
+	if (is_hover_input)
+		UI_draw_circle(UIPoint_add_margin(UI_io_point_for_drawable(o->ui, true)), UI_IO_SIZE*1.5, UI_COLOR_BLACK);
+	else if (is_hover_output)
+		UI_draw_circle(UIPoint_add_margin(UI_io_point_for_drawable(o->ui, false)), UI_IO_SIZE*1.5, UI_COLOR_BLACK);
+	
+	//UI_draw_io(o)
 	// Draw IO nodes
-	UI_draw_circle(UIPoint_add(UIPoint_margin, UI_io_point_for_drawable(o->ui, true)),  UI_IO_SIZE, UI_COLOR_AUDIO);
-	UI_draw_circle(UIPoint_add(UIPoint_margin, UI_io_point_for_drawable(o->ui, false)), UI_IO_SIZE, UI_COLOR_AUDIO);
+	UI_draw_circle(UIPoint_add_margin(UI_io_point_for_drawable(o->ui, true)),  UI_IO_SIZE, UI_COLOR_AUDIO);
+	UI_draw_circle(UIPoint_add_margin(UI_io_point_for_drawable(o->ui, false)), UI_IO_SIZE, UI_COLOR_AUDIO);
 }
 
 void *LFO_alloc() {
@@ -68,6 +87,7 @@ void LFO_process(Object *o, AudioPhaseDataList *phase_data_head, unsigned long f
 void LFO_init() {
 	obj_set_type_params(
 		TYPE_LFO,
+		"LFO",
 		&LFO_process,
 		&LFO_alloc,
 		&LFO_draw_object,

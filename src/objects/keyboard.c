@@ -58,13 +58,17 @@ static inline ALLEGRO_COLOR Keyboard_color_for_key(Keyboard *kb, int k) {
     }
 }
 
-void Keyboard_draw_object(Object *o, bool is_selected, UIPoint loc, ALLEGRO_EVENT *ev) {
+void Keyboard_draw_object(Object *o, bool is_selected, UIPoint mouse, ALLEGRO_EVENT *ev) {
 	Keyboard *kb = o->data;
 	int note;
+	bool is_hover_output = UI_is_point_near_io(mouse, o->ui, false);
 	
 	switch (ev->type) {
 		case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
-			UI_set_target(o, UITargetObject);
+			if (UI_is_point_near_io(mouse, o->ui, false))
+				UI_set_target(o, UITargetOutput);
+			else
+				UI_set_target(o, UITargetObject);
 			break;
 		case ALLEGRO_EVENT_KEY_DOWN:
 		case ALLEGRO_EVENT_KEY_UP:
@@ -72,6 +76,9 @@ void Keyboard_draw_object(Object *o, bool is_selected, UIPoint loc, ALLEGRO_EVEN
 			if (note >= 0)
 				kb->key_pressed[note] = (ev->type == ALLEGRO_EVENT_KEY_DOWN);
 	}
+	
+	if (is_selected)
+		UI_draw_border(UIRect_points(UIPoint_margin, o->ui->size), UI_COLOR_HIGHLIGHT);
 	
 	// Draw keys
 	int key_width  = KEYBOARD_WIDTH  / 2;
@@ -105,9 +112,12 @@ void Keyboard_draw_object(Object *o, bool is_selected, UIPoint loc, ALLEGRO_EVEN
 		if (!Keyboard_is_black_key(i-2))
 			key_rect.loc.y += key_height;
 	}
+	
+	if (is_hover_output)
+		UI_draw_circle(UIPoint_add_margin(UI_io_point_for_drawable(o->ui, false)), UI_IO_SIZE*1.5, UI_COLOR_BLACK);
 
 	// Draw IO nodes
-	UI_draw_circle(UIPoint_add(UIPoint_margin, UI_io_point_for_drawable(o->ui, false)), UI_IO_SIZE, UI_COLOR_CONTROL);
+	UI_draw_circle(UIPoint_add_margin(UI_io_point_for_drawable(o->ui, false)), UI_IO_SIZE, UI_COLOR_CONTROL);
 }
 
 void *Keyboard_alloc() {
@@ -118,9 +128,8 @@ void Keyboard_process(Object *o, AudioPhaseDataList *phase_data, unsigned long f
 	Keyboard *kb = o->data;
 
 	for (int i = 0; i < 12; i++) {
-		if (kb->key_pressed[i]) {
+		if (kb->key_pressed[i])
 			Audio_enable_note(i);
-		}
 		else
 			Audio_disable_note(i);
 	}
@@ -129,6 +138,7 @@ void Keyboard_process(Object *o, AudioPhaseDataList *phase_data, unsigned long f
 void Keyboard_init() {
 	obj_set_type_params(
 		TYPE_KEYBOARD,
+		"Keyboard",
 		&Keyboard_process,
 		&Keyboard_alloc,
 		&Keyboard_draw_object,

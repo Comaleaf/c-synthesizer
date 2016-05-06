@@ -69,7 +69,7 @@ void Audio_enable_note(int n) {
 
 	AudioPhaseDataList *new_phase = calloc(1, sizeof(AudioPhaseDataList));
 	new_phase->tag = n;
-	new_phase->increment = (440.0f * pow(1.059463094359, n)) / (float)AUDIO_SAMPLE_RATE;
+	new_phase->increment = (440.0f * pow(1.059463094359, n-9)) / (float)AUDIO_SAMPLE_RATE; // -9 for middle C (440Hz is A above)
 
 	*phase_data = new_phase;
 }

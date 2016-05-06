@@ -18,6 +18,8 @@ ALLEGRO_EVENT_QUEUE *ui_event_queue = NULL;
 UIPoint UIPoint_margin = {UI_MARGIN, UI_MARGIN};
 UIPoint ui_mouse; // Cursor position
 
+UIRect ui_toolbar[TYPE_COUNT];
+
 // Object being manipulated (dragged)
 struct {
 	UIDrawable  *item;
@@ -89,6 +91,7 @@ void UI_remove_object(Object *o) {
 }
 
 void UI_init() {
+	
     ui_display = al_create_display(UI_WIDTH, UI_HEIGHT);
 	ui_event_queue = al_create_event_queue();
 
@@ -222,7 +225,27 @@ bool UI_next() {
 		al_draw_bitmap(ui_items[i]->bitmap, ui_items[i]->loc.x-UI_MARGIN, ui_items[i]->loc.y-UI_MARGIN, 0);
 	}
 	
-	// Finally, draw an unconnected node edge if we are currently in the process of changing one
+	// Draw toolbar
+	UIRect  toolbar_rect = UIRect_xy(-10, -10, UI_WIDTH+20, UI_TOOLBAR_HEIGHT+10);
+	UIRect button_rect = UIRect_points(UIPoint_xy(15, 15), UIPoint_xy((UI_WIDTH - 15) / TYPE_COUNT - 15, UI_TOOLBAR_HEIGHT - 30));
+	UI_draw_box(toolbar_rect, UI_COLOR_WHITE);
+	
+	for (ObjType t = 0; t < TYPE_COUNT; t++) {
+		bool mouse_over = UI_is_point_within_rect(ui_mouse, button_rect);
+		
+		// If there's a click, add the new item under the cursor
+		if (mouse_over && ev.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
+			Object *new = Object_with(t);
+			UI_add_object(new, ui_mouse);
+			UI_set_target(new, UITargetObject);
+		}
+		
+		UI_draw_box(button_rect, mouse_over ? UI_COLOR_HIGHLIGHT : UI_COLOR_WHITE);
+		UI_draw_label(UIPoint_offset(button_rect.loc, button_rect.size.x/2, 9), obj_get_name(t));
+		button_rect.loc.x += button_rect.size.x + 15;
+	}
+	
+	// Draw an unconnected node edge if we are currently in the process of changing one
 	if (ui_target.item != NULL && ui_target.type != UITargetObject) {
 		UI_draw_line_thick(ui_mouse, ui_target.offset);
 	}
@@ -250,7 +273,7 @@ bool UI_next() {
 			// Delete any target
 			else if (ev.keyboard.keycode == ALLEGRO_KEY_DELETE ||
 					 ev.keyboard.keycode == ALLEGRO_KEY_BACKSPACE) {
-				if (ui_target.item != NULL) {
+				if (ui_target.item != NULL && ui_target.is_selected) {
 					UI_remove_object(ui_target.item->object);
 					ui_target.item = NULL;
 				}
@@ -358,7 +381,7 @@ bool UI_is_point_near(UIPoint p1, UIPoint p2, int threshhold) {
 }
 
 bool UI_is_point_near_io(UIPoint p, UIDrawable *d, bool is_input) {
-	return UI_is_point_near(p, UIPoint_add(UIPoint_margin, UI_io_point_for_drawable(d, is_input)), UI_IO_SIZE*2);
+	return UI_is_point_near(p, UIPoint_add_margin(UI_io_point_for_drawable(d, is_input)), UI_IO_SIZE*2);
 }
 	
 extern inline bool UI_is_point_within_bounds(UIPoint p, UIPoint loc, UIPoint bounds) {
